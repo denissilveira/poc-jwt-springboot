@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.dao.DuplicateKeyException;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 import com.pocs.jwtboot.auth.TokenHelper;
 import com.pocs.jwtboot.model.entity.User;
 import com.pocs.jwtboot.model.enums.RolesEnum;
-import com.pocs.jwtboot.model.mapper.UserMapper;
 import com.pocs.jwtboot.model.resource.UserResource;
 import com.pocs.jwtboot.model.resource.UserTokenStateResource;
 import com.pocs.jwtboot.repository.UserRepository;
@@ -42,6 +42,8 @@ public class UserServiceImpl implements UserService {
     private AuthenticationManager authenticationManager;
 	@Autowired
 	private TokenHelper tokenHelper;
+	@Autowired
+    private ModelMapper modelMapper;
 	
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -57,7 +59,7 @@ public class UserServiceImpl implements UserService {
 			
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			User user = (User) authentication.getPrincipal();
-			UserResource userResource = UserMapper.parse(user);
+			UserResource userResource = modelMapper.map(user, UserResource.class);
 			String jws = tokenHelper.generateToken(user.getUsername(), device);
 			int expiresIn = tokenHelper.getExpiredIn(device);
 			return new UserTokenStateResource(jws, expiresIn, userResource);
@@ -78,11 +80,11 @@ public class UserServiceImpl implements UserService {
 			userModel.setLastPasswordResetDate(new Date());
 			userModel.setRoles(Collections.singletonList(RolesEnum.USER.name()));
 			userModel.setPassword(bCryptPasswordEncoder.encode(userModel.getPassword()));
-			final User user = userRepository.save(UserMapper.parse(userModel));
+			final User user = userRepository.save(modelMapper.map(userModel, User.class));
 			if(user == null)
 				throw new Exception("Erro ao cadastrar usuario");
 			
-			return UserMapper.parse(user);
+			return modelMapper.map(user, UserResource.class);
 		} catch(Exception e) {
 			throw new Exception(e);
 		}
@@ -126,11 +128,17 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserResource findByUsernameAndRoles(final String username, final List<String> roles) {
-		return UserMapper.parse(userRepository.findByUsernameAndRoles(username, roles));
+		final User user = userRepository.findByUsernameAndRoles(username, roles);
+		if(user == null)
+			return null;
+		return modelMapper.map(user, UserResource.class);
 	}
 
 	@Override
 	public UserResource findById(final String id) {
-		return UserMapper.parse(userRepository.findOne(id));
+		final User user = userRepository.findOne(id);
+		if(user == null)
+			return null;
+		return modelMapper.map(user, UserResource.class);
 	}
 }
