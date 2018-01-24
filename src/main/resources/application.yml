@@ -1,0 +1,27 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      username: 2F4st2FurY
+      password: ActAF00l
+      port: 27017
+      database: Start
+
+server:
+  context-path: /jwtboot
+  port: 8090  
+    
+swagger:
+  groupName: jwtboot
+  pathRegex: /v1/*.*
+  title: jwtboot API
+  version: 1.0.0
+
+app:
+  name: jwtboot
+  
+jwt:
+  header: Authorization
+  expires_in: 30000 # 5 minutes
+  mobile_expires_in: 60000 # 10 minutes
+  secret: pocjwtboot
