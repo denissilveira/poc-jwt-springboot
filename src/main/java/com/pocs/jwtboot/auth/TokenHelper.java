@@ -41,91 +41,78 @@ public class TokenHelper {
     private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
     public String getUsernameFromToken(final String token) {
-       
-    	String username;
+
         try {
             final Claims claims = this.getAllClaimsFromToken(token);
-            username = claims.getSubject();
+            return claims.getSubject();
         } catch (Exception e) {
-            username = null;
+            return null;
         }
-        return username;
     }
 
     public Date getIssuedAtDateFromToken(final String token) {
-        Date issueAt;
         try {
             final Claims claims = this.getAllClaimsFromToken(token);
-            issueAt = claims.getIssuedAt();
+            return claims.getIssuedAt();
         } catch (Exception e) {
-            issueAt = null;
+            return null;
         }
-        return issueAt;
     }
 
     public String getAudienceFromToken(final String token) {
-        String audience;
         try {
             final Claims claims = this.getAllClaimsFromToken(token);
-            audience = claims.getAudience();
+            return claims.getAudience();
         } catch (Exception e) {
-            audience = null;
+            return null;
         }
-        return audience;
     }
 
     public String refreshToken(final String token, final Device device) {
-        String refreshedToken;
-        Date a = timeProvider.now();
         try {
             final Claims claims = this.getAllClaimsFromToken(token);
-            claims.setIssuedAt(a);
-            refreshedToken = Jwts.builder()
-                .setClaims(claims)
-                .setExpiration(generateExpirationDate(device))
-                .signWith( SIGNATURE_ALGORITHM, SECRET )
-                .compact();
+            claims.setIssuedAt(timeProvider.now());
+            return Jwts.builder()
+                    .setClaims(claims)
+                    .setExpiration(generateExpirationDate(device))
+                    .signWith(SIGNATURE_ALGORITHM, SECRET)
+                    .compact();
         } catch (Exception e) {
-            refreshedToken = null;
+            return null;
         }
-        return refreshedToken;
     }
 
     public String generateToken(final String username, final Device device) {
-        String audience = generateAudience(device);
         return Jwts.builder()
-                .setIssuer( APP_NAME )
+                .setIssuer(APP_NAME)
                 .setSubject(username)
-                .setAudience(audience)
+                .setAudience(generateAudience(device))
                 .setIssuedAt(timeProvider.now())
                 .setExpiration(generateExpirationDate(device))
-                .signWith( SIGNATURE_ALGORITHM, SECRET )
+                .signWith(SIGNATURE_ALGORITHM, SECRET)
                 .compact();
     }
 
     private String generateAudience(final Device device) {
-        String audience = AUDIENCE_UNKNOWN;
         if (device.isNormal()) {
-            audience = AUDIENCE_WEB;
+            return AUDIENCE_WEB;
         } else if (device.isTablet()) {
-            audience = AUDIENCE_TABLET;
+            return AUDIENCE_TABLET;
         } else if (device.isMobile()) {
-            audience = AUDIENCE_MOBILE;
+            return AUDIENCE_MOBILE;
         }
-        return audience;
+        return AUDIENCE_UNKNOWN;
     }
 
     private Claims getAllClaimsFromToken(final String token) {
-        Claims claims;
         try {
-            claims = Jwts.parser()
+            return Jwts.parser()
                     .setSigningKey(SECRET)
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            claims = null;
+            return null;
         }
-        return claims;
     }
 
     private Date generateExpirationDate(final Device device) {
@@ -138,30 +125,27 @@ public class TokenHelper {
     }
 
     public Boolean validateToken(final String token, final UserDetails userDetails) {
-        User user = (User) userDetails;
+        final User user = (User) userDetails;
         final String username = getUsernameFromToken(token);
         final Date created = getIssuedAtDateFromToken(token);
-        return (
-                username != null &&
-                username.equals(userDetails.getUsername()) &&
-                        !isCreatedBeforeLastPasswordReset(created, user.getLastPasswordResetDate())
-        );
+        return (username != null && username.equals(userDetails.getUsername())
+                && !isCreatedBeforeLastPasswordReset(created, user.getLastPasswordResetDate()));
     }
 
-    private Boolean isCreatedBeforeLastPasswordReset(Date created, Date lastPasswordReset) {
+    private Boolean isCreatedBeforeLastPasswordReset(final Date created, final Date lastPasswordReset) {
         return (lastPasswordReset != null && created.before(lastPasswordReset));
     }
 
-    public String getToken( HttpServletRequest request ) {
+    public String getToken(final HttpServletRequest request) {
 
-    	String authHeader = getAuthHeaderFromHeader( request );
-        if ( authHeader != null && authHeader.startsWith("Bearer ")) {
+        final String authHeader = getAuthHeaderFromHeader(request);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }
         return null;
     }
 
-    public String getAuthHeaderFromHeader( HttpServletRequest request ) {
+    public String getAuthHeaderFromHeader(final HttpServletRequest request) {
         return request.getHeader(AUTH_HEADER);
     }
 

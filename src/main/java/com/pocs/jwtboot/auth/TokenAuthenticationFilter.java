@@ -17,29 +17,25 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private TokenHelper tokenHelper;
     private UserDetailsService userDetailsService;
 
-    public TokenAuthenticationFilter(TokenHelper tokenHelper, UserDetailsService userDetailsService) {
+    public TokenAuthenticationFilter(final TokenHelper tokenHelper, final UserDetailsService userDetailsService) {
         this.tokenHelper = tokenHelper;
         this.userDetailsService = userDetailsService;
     }
 
     @Override
     public void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain chain
-    ) throws IOException, ServletException {
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final FilterChain chain) throws IOException, ServletException {
 
-        String username;
-        String authToken = tokenHelper.getToken(request);
+        final String authToken = tokenHelper.getToken(request);
 
         if (authToken != null) {
-            username = tokenHelper.getUsernameFromToken(authToken);
+            final String username = tokenHelper.getUsernameFromToken(authToken);
             if (username != null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 if (tokenHelper.validateToken(authToken, userDetails)) {
-                    TokenBasedAuthentication authentication = new TokenBasedAuthentication(userDetails);
-                    authentication.setToken(authToken);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(new TokenBasedAuthentication(userDetails, authToken));
                 }
             }
         }

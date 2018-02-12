@@ -2,7 +2,6 @@ package com.pocs.jwtboot.service.impl;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +23,10 @@ import org.springframework.stereotype.Service;
 import com.pocs.jwtboot.auth.TokenHelper;
 import com.pocs.jwtboot.model.entity.User;
 import com.pocs.jwtboot.model.enums.RolesEnum;
-import com.pocs.jwtboot.model.resource.UserResource;
-import com.pocs.jwtboot.model.resource.UserTokenStateResource;
 import com.pocs.jwtboot.repository.UserRepository;
 import com.pocs.jwtboot.service.UserService;
+import com.pocs.jwtboot.web.contract.UserResource;
+import com.pocs.jwtboot.web.contract.UserTokenStateResource;
 
 @Service("userService")
 public class UserServiceImpl implements UserService {
@@ -58,10 +57,10 @@ public class UserServiceImpl implements UserService {
 					.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 			
 			SecurityContextHolder.getContext().setAuthentication(authentication);
-			User user = (User) authentication.getPrincipal();
-			UserResource userResource = modelMapper.map(user, UserResource.class);
-			String jws = tokenHelper.generateToken(user.getUsername(), device);
-			int expiresIn = tokenHelper.getExpiredIn(device);
+			final User user = (User) authentication.getPrincipal();
+			final UserResource userResource = modelMapper.map(user, UserResource.class);
+			final String jws = tokenHelper.generateToken(user.getUsername(), device);
+			final int expiresIn = tokenHelper.getExpiredIn(device);
 			return new UserTokenStateResource(jws, expiresIn, userResource);
 		} catch (BadCredentialsException | InternalAuthenticationServiceException e) {
 			throw new InternalAuthenticationServiceException(e.getMessage());
@@ -74,13 +73,14 @@ public class UserServiceImpl implements UserService {
 	public UserResource registration(final UserResource userModel) throws DuplicateKeyException, Exception {
 		
 		try {
-			
 			userModel.setActive(true);
-			userModel.setCreated(new Date());
-			userModel.setLastPasswordResetDate(new Date());
+			final Date now = new Date();
+			userModel.setCreated(now);
+			userModel.setLastPasswordResetDate(now);
 			userModel.setRoles(Collections.singletonList(RolesEnum.USER.name()));
 			userModel.setPassword(bCryptPasswordEncoder.encode(userModel.getPassword()));
 			final User user = userRepository.save(modelMapper.map(userModel, User.class));
+			
 			if(user == null)
 				throw new Exception("Erro ao cadastrar usuario");
 			
@@ -94,7 +94,8 @@ public class UserServiceImpl implements UserService {
     public void autologin(final String username, final String password) {
 		
         final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
+        final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = 
+                new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
         authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
         if (usernamePasswordAuthenticationToken.isAuthenticated()) {
@@ -107,12 +108,7 @@ public class UserServiceImpl implements UserService {
 
 		final Authentication currentUser = SecurityContextHolder.getContext().getAuthentication();
 		final String username = currentUser.getName();
-
-		if (authenticationManager != null) {
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, oldPassword));
-		} else {
-			return;
-		}
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, oldPassword));
 
 		final User user = (User) loadUserByUsername(username);
 		user.setLastPasswordResetDate(new Date());
@@ -122,16 +118,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
-		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-		return bCryptPasswordEncoder;
-	}
-
-	@Override
-	public UserResource findByUsernameAndRoles(final String username, final List<String> roles) {
-		final User user = userRepository.findByUsernameAndRoles(username, roles);
-		if(user == null)
-			return null;
-		return modelMapper.map(user, UserResource.class);
+		return new BCryptPasswordEncoder();
 	}
 
 	@Override

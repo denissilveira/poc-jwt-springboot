@@ -1,4 +1,4 @@
-package com.pocs.jwtboot.model.resource;
+package com.pocs.jwtboot.web.contract;
 
 import java.util.Date;
 import java.util.List;
@@ -43,12 +43,6 @@ public class UserResource {
 	public void setPhoto(String photo) {
 		this.photo = photo;
 	}
-	public Date getCreated() {
-		return created;
-	}
-	public void setCreated(Date created) {
-		this.created = created;
-	}
 	public boolean isActive() {
 		return active;
 	}
@@ -67,11 +61,17 @@ public class UserResource {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	public Date getLastPasswordResetDate() {
-		return lastPasswordResetDate;
-	}
-	public void setLastPasswordResetDate(Date lastPasswordResetDate) {
-		this.lastPasswordResetDate = lastPasswordResetDate;
-	}
+    public Date getCreated() {
+        return created;
+    }
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+    public Date getLastPasswordResetDate() {
+        return lastPasswordResetDate;
+    }
+    public void setLastPasswordResetDate(Date lastPasswordResetDate) {
+        this.lastPasswordResetDate = lastPasswordResetDate;
+    }
 
 }

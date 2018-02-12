@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pocs.jwtboot.auth.TokenHelper;
-import com.pocs.jwtboot.model.resource.AuthenticationResource;
-import com.pocs.jwtboot.model.resource.PasswordChangerResource;
-import com.pocs.jwtboot.model.resource.UserTokenStateResource;
 import com.pocs.jwtboot.provider.DeviceProvider;
 import com.pocs.jwtboot.service.UserService;
+import com.pocs.jwtboot.web.contract.AuthenticationResource;
+import com.pocs.jwtboot.web.contract.PasswordChangerResource;
+import com.pocs.jwtboot.web.contract.UserTokenStateResource;
 
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;

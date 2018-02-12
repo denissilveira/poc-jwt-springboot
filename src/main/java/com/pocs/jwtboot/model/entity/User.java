@@ -54,12 +54,6 @@ public class User implements UserDetails {
 	public void setPhoto(String photo) {
 		this.photo = photo;
 	}
-	public Date getCreated() {
-		return created;
-	}
-	public void setCreated(Date created) {
-		this.created = created;
-	}
 	public boolean isActive() {
 		return active;
 	}
@@ -72,18 +66,23 @@ public class User implements UserDetails {
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
 	}
-	public Date getLastPasswordResetDate() {
-		return lastPasswordResetDate;
-	}
-
-	public void setLastPasswordResetDate(Date lastPasswordResetDate) {
-		this.lastPasswordResetDate = lastPasswordResetDate;
-	}
 	public void setUsername(String username) {
 		this.username = username;
 	}
+    public Date getCreated() {
+        return created;
+    }
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+    public Date getLastPasswordResetDate() {
+        return lastPasswordResetDate;
+    }
+    public void setLastPasswordResetDate(Date lastPasswordResetDate) {
+        this.lastPasswordResetDate = lastPasswordResetDate;
+    }
 
-	@Override
+    @Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		if(CollectionUtils.isEmpty(roles))
 			return null;
